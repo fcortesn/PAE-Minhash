@@ -5,7 +5,7 @@ const toneAnalyzer = new ToneAnalyzerV3({
   iam_apikey: 'FgkkhHi_8VF4X-ON3EEQlZh9VW2A-OvKV_topUyenTAG',
   url: 'https://gateway.watsonplatform.net/tone-analyzer/api',
   disable_ssl_verification: true
-});
+}); 
 
 var text = `I Caught a glimpse of your light
 When I was empty inside
