@@ -11,7 +11,7 @@ const toneAnalyzer = new ToneAnalyzerV3({
 var songs = fs.readdirSync('./songs/');
 songs.forEach(song => {
   let text = fs.readFileSync(`./songs/${song}`, 'utf8', function(err, data) {
-    text = data;
+    return data;
   });
 
   const toneParams = {

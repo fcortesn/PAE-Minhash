@@ -4,11 +4,14 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "babel-node --presets es2015 preprocessing.js"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "ibm-watson": "^4.4.0"
+    "babel-cli": "^6.26.0",
+    "babel-preset-es2015": "^6.24.1",
+    "ibm-watson": "^4.4.0",
+    "minhash": "0.0.9"
   }
 }
