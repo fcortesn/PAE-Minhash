@@ -14,28 +14,34 @@ songs.forEach(song => {
   text = text.split(" ");
 
   var shingles = [];
-  
-  for (let i=0; i<text.length / 3; i++) {
-    var start = i * 3;
-    var end = start + 3;
+  var shingleSize = 3; 
+
+  for (let i=0; i<text.length / shingleSize; i++) {
+    var start = i * shingleSize;
+    var end = start + shingleSize;
     var shingle = text.slice(start, end);
     shingles.push(shingle.join(' '));
   };
   
   songLyrics.push({
-      song: song.replace(/\.txt/g, ""),
+      songName: song.replace(/\.txt/g, ""),
       shingles: shingles
   });
 });
 
-var index = new LshIndex({bandSize: 1});
+var index = new LshIndex({bandSize: 2});
 songLyrics.forEach(song => {
-    var m1 = new Minhash();
+    var m1 = new Minhash({numPerm: 4, seed: 1});
     song.shingles.map(function(w) { m1.update(w) });
     song.signature = m1.hashvalues;
-    index.insert(song.song, {hashvalues: song.signature});
+    index.insert(song.songName, {hashvalues: song.signature});
 });
 
 songLyrics.forEach(song => {
-    console.log('Jaccard similarity >= 0.5 to m1:', index.query({hashvalues: song.signature}));
+    console.log(song.songName)
+    console.log(song.signature);
+})
+
+songLyrics.forEach(song => {    
+    console.log(`Songs similar to "${song.songName}": [${index.query({hashvalues: song.signature})}]`);
 });
