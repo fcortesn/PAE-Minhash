@@ -9,12 +9,12 @@ songs.forEach(song => {
     return data;
   });
 
-  text = text.toLowerCase().replace(/\.|\,|\;|\'/g, "");
+  text = text.toLowerCase().replace(/\.|\,|\;|\'|\[.*\]/g, "");
   text = text.replace(/\s/g, " ");
   text = text.split(" ");
 
   var shingles = [];
-  var shingleSize = 3; 
+  var shingleSize = 2; 
 
   for (let i=0; i<text.length / shingleSize; i++) {
     var start = i * shingleSize;
@@ -31,17 +31,38 @@ songs.forEach(song => {
 
 var index = new LshIndex({bandSize: 2});
 songLyrics.forEach(song => {
-    var m1 = new Minhash({numPerm: 4, seed: 1});
+    var m1 = new Minhash({numPerm: 256, seed: 1});
     song.shingles.map(function(w) { m1.update(w) });
     song.signature = m1.hashvalues;
     index.insert(song.songName, {hashvalues: song.signature});
 });
 
-songLyrics.forEach(song => {
-    console.log(song.songName)
-    console.log(song.signature);
-})
+var matches = {};
+var count = 0;
 
 songLyrics.forEach(song => {    
-    console.log(`Songs similar to "${song.songName}": [${index.query({hashvalues: song.signature})}]`);
+    let queryResult = index.query({hashvalues: song.signature});
+    if (queryResult.length > 1) {
+        for (let i = 0; i < queryResult.length; i++){
+            if (song.songName === queryResult[i]) {
+                continue;
+            }
+            if (matches[queryResult[i]]) {
+                continue;
+            } else {
+                if (matches[song.songName]) {
+                    matches[song.songName].push(queryResult[i]);
+                    count++;
+                } else {
+                    matches[song.songName] = [queryResult[i]];
+                    count++;
+                }
+                
+            }        
+        }
+    }
 });
+
+console.log(matches);
+console.log(count);
+
