@@ -1,68 +1,115 @@
 import { Minhash, LshIndex } from 'minhash';
-const fs = require('fs');
+const fsModule = require('./fsModule');
+const toneAnalyzer = new require('./tone');
 
-var songLyrics = [];
+const fs = new fsModule('tests');
+const toneAPI = new toneAnalyzer();
+toneAPI.init();
 
-var songs = fs.readdirSync('./songs/');
-songs.forEach(song => {
-  let text = fs.readFileSync(`./songs/${song}`, 'utf8', function(err, data) {
-    return data;
-  });
+function getSignature(lyrics) {
+    var text = lyrics.toLowerCase().replace(/\.|\,|\;|\(|\)|\[.*\]/g, "");
+    text = text.replace(/\s+/g, " ");
+    text = text.split(" ");
 
-  text = text.toLowerCase().replace(/\.|\,|\;|\'|\[.*\]/g, "");
-  text = text.replace(/\s/g, " ");
-  text = text.split(" ");
+    var shingles = [];
+    var shingleSize = 2; 
 
-  var shingles = [];
-  var shingleSize = 2; 
+    for (let i=0; i<text.length / shingleSize; i++) {
+        var start = i * shingleSize;
+        var end = start + shingleSize;
+        var shingle = text.slice(start, end);
+        shingles.push(shingle.join(' '));
+    };
 
-  for (let i=0; i<text.length / shingleSize; i++) {
-    var start = i * shingleSize;
-    var end = start + shingleSize;
-    var shingle = text.slice(start, end);
-    shingles.push(shingle.join(' '));
-  };
-  
-  songLyrics.push({
-      songName: song.replace(/\.txt/g, ""),
-      shingles: shingles
-  });
-});
+    var m1 = new Minhash({numPerm: 2048, seed: 1});
+    shingles.map(function(w) { m1.update(w) });
+    return m1.hashvalues;
+}
 
-var index = new LshIndex({bandSize: 2});
-songLyrics.forEach(song => {
-    var m1 = new Minhash({numPerm: 256, seed: 1});
-    song.shingles.map(function(w) { m1.update(w) });
-    song.signature = m1.hashvalues;
-    index.insert(song.songName, {hashvalues: song.signature});
-});
+(function preprocessing() {
+    var songs = fs.readSongs();
+    songs.forEach(song => {
+        let newSong = {
+            name: song
+        };
 
-var matches = {};
-var count = 0;
+        newSong.lyrics = fs.readFile(song);
+        newSong.signature = getSignature(newSong.lyrics);
+        newSong.name = newSong.name.replace(/\.txt/g, "");
 
-songLyrics.forEach(song => {    
-    let queryResult = index.query({hashvalues: song.signature});
-    if (queryResult.length > 1) {
-        for (let i = 0; i < queryResult.length; i++){
-            if (song.songName === queryResult[i]) {
-                continue;
-            }
-            if (matches[queryResult[i]]) {
-                continue;
-            } else {
-                if (matches[song.songName]) {
-                    matches[song.songName].push(queryResult[i]);
-                    count++;
-                } else {
-                    matches[song.songName] = [queryResult[i]];
-                    count++;
-                }
+        toneAPI.analyze(newSong.lyrics).then(toneAnalysis => {
+            newSong.sentiments = toneAnalysis.document_tone;
+            fs.writeFile(newSong);
+        })
+        .catch(err => {
+            console.log('error:', err);
+        });
+    });
+})();
+
+
+
+// text = text.toLowerCase().replace(/\.|\,|\;|\(|\)|\[.*\]/g, "");
+// text = text.replace(/\s+/g, " ");
+// text = text.split(" ");
+
+// var shingles = [];
+// var shingleSize = 2; 
+
+// for (let i=0; i<text.length / shingleSize; i++) {
+//     var start = i * shingleSize;
+//     var end = start + shingleSize;
+//     var shingle = text.slice(start, end);
+//     shingles.push(shingle.join(' '));
+// };
+
+// songLyrics.push({
+//     songName: song.replace(/\.txt/g, ""),
+//     shingles: shingles
+// });
+
+// var index = new LshIndex({bandSize: 1});
+// songLyrics.forEach(song => {
+//     var m1 = new Minhash({numPerm: 2048, seed: 1});
+//     song.shingles.map(function(w) { m1.update(w) });
+//     song.signature = m1.hashvalues;
+//     index.insert(song.songName, {hashvalues: song.signature});
+// });
+
+// var index = new LshIndex({bandSize: 1});
+// songLyrics.forEach(song => {
+//     var m1 = new Minhash({numPerm: 2048, seed: 1});
+//     song.shingles.map(function(w) { m1.update(w) });
+//     song.signature = m1.hashvalues;
+//     index.insert(song.songName, {hashvalues: song.signature});
+// });
+
+// var matches = {};
+// var count = 0;
+
+// songLyrics.forEach(song => {    
+//     let queryResult = index.query({hashvalues: song.signature});
+//     if (queryResult.length > 1) {
+//         for (let i = 0; i < queryResult.length; i++){
+//             if (song.songName === queryResult[i]) {
+//                 continue;
+//             }
+//             if (matches[queryResult[i]]) {
+//                 continue;
+//             } else {
+//                 if (matches[song.songName]) {
+//                     matches[song.songName].push(queryResult[i]);
+//                     count++;
+//                 } else {
+//                     matches[song.songName] = [queryResult[i]];
+//                     count++;
+//                 }
                 
-            }        
-        }
-    }
-});
+//             }        
+//         }
+//     }
+// });
 
-console.log(matches);
-console.log(count);
+// // console.log(matches);
+// console.log(count);
 
