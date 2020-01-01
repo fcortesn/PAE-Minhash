@@ -30,15 +30,19 @@ function getSignature(lyrics) {
     var songs = fs.readSongs();
     songs.forEach(song => {
         let newSong = {
-            name: song
+            title: song
         };
 
         newSong.lyrics = fs.readFile(song);
         newSong.signature = getSignature(newSong.lyrics);
-        newSong.name = newSong.name.replace(/\.txt/g, "");
+        newSong.title = newSong.title.replace(/\.txt/g, "");
+        newSong.sentiment = [];
 
         toneAPI.analyze(newSong.lyrics).then(toneAnalysis => {
-            newSong.sentiments = toneAnalysis.document_tone;
+            toneAnalysis.document_tone.tones.forEach(tone => {
+                newSong.sentiment.push(tone.tone_id);
+            });
+            
             fs.writeFile(newSong);
         })
         .catch(err => {

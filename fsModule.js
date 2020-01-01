@@ -12,7 +12,7 @@ function fsModule(folder) {
     }
 
     this.writeFile = function (song) {
-        fs.writeFile(`./enrichedSongs/${song.name}`, JSON.stringify(song), function (err) {
+        fs.writeFile(`./enrichedSongs/${song.title}`, JSON.stringify(song), function (err) {
             if (err) throw err;
         });
     }
