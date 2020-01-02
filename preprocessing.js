@@ -1,4 +1,4 @@
-import { Minhash, LshIndex } from 'minhash';
+import { Minhash } from 'minhash';
 const fsModule = require('./fsModule');
 const toneAnalyzer = new require('./tone');
 

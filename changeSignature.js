@@ -1,4 +1,4 @@
-import { Minhash, LshIndex } from 'minhash';
+import { Minhash } from 'minhash';
 const fsModule = require('./fsModule');
 
 const fs = new fsModule('enrichedSongs');
@@ -25,7 +25,7 @@ function getSignature(lyrics, shingleSize, hashFunctions) {
 (function changeSignature(shingleSize, hashFunctions) {
     var songs = fs.readSongs();
     songs.forEach(songName => {
-        let song =JSON.parse(fs.readFile(songName));
+        let song = JSON.parse(fs.readFile(songName));
         song.signature = getSignature(song.lyrics, shingleSize, hashFunctions);
         fs.writeFile(song);
     });
