@@ -6,7 +6,8 @@
   "scripts": {
     "test": "babel-node --presets es2015 preprocessing.js",
     "changeSignature": "babel-node --presets es2015 changeSignature.js",
-    "queryBySentiments": "babel-node --presets es2015 queryBySentiments.js"
+    "queryBySentiments": "babel-node --presets es2015 queryBySentiments.js",
+    "setGenre": "babel-node --presets es2015 setGenre.js"
   },
   "author": "",
   "license": "ISC",
